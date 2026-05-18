@@ -120,69 +120,81 @@ document.querySelectorAll('.faq-q').forEach(btn => {
 
 // Testimonial carousel
 const track = document.getElementById('tTrack');
-const dots = document.querySelectorAll('.testi-dot');
-const prev = document.getElementById('tPrev');
-const next = document.getElementById('tNext');
-const total = track.children.length;
-let cur = 0;
+if (track) {
+  const dots = document.querySelectorAll('.testi-dot');
+  const prev = document.getElementById('tPrev');
+  const next = document.getElementById('tNext');
+  const total = track.children.length;
+  let cur = 0;
 
-function goTo(n) {
-  cur = n;
-  track.style.transform = `translateX(-${cur * 100}%)`;
-  dots.forEach((d, i) => d.classList.toggle('active', i === cur));
-  prev.disabled = cur === 0;
-  next.disabled = cur === total - 1;
-}
+  function goTo(n) {
+    cur = n;
+    track.style.transform = `translateX(-${cur * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === cur));
+    prev.disabled = cur === 0;
+    next.disabled = cur === total - 1;
+  }
 
-prev.addEventListener('click', () => goTo(cur - 1));
-next.addEventListener('click', () => goTo(cur + 1));
-dots.forEach((d, i) => d.addEventListener('click', () => goTo(i)));
+  prev.addEventListener('click', () => goTo(cur - 1));
+  next.addEventListener('click', () => goTo(cur + 1));
+  dots.forEach((d, i) => d.addEventListener('click', () => goTo(i)));
 
-// Auto-advance testimonials every 6s
-let autoplay = setInterval(() => {
-  goTo(cur === total - 1 ? 0 : cur + 1);
-}, 6000);
+  let autoplay = setInterval(() => {
+    goTo(cur === total - 1 ? 0 : cur + 1);
+  }, 6000);
 
-[prev, next, ...dots].forEach(el => {
-  el.addEventListener('click', () => {
-    clearInterval(autoplay);
-    autoplay = setInterval(() => goTo(cur === total - 1 ? 0 : cur + 1), 6000);
+  [prev, next, ...dots].forEach(el => {
+    el.addEventListener('click', () => {
+      clearInterval(autoplay);
+      autoplay = setInterval(() => goTo(cur === total - 1 ? 0 : cur + 1), 6000);
+    });
   });
-});
+}
 
 // Hamburger menu
 const hamburger = document.getElementById('navHamburger');
 const mobileMenu = document.getElementById('navMobileMenu');
 
-hamburger.addEventListener('click', () => {
-  const isOpen = mobileMenu.classList.contains('open');
-  hamburger.classList.toggle('open');
-  mobileMenu.classList.toggle('open');
-  document.body.style.overflow = isOpen ? '' : 'hidden';
-});
-
-mobileMenu.querySelectorAll('a').forEach(link => {
-  link.addEventListener('click', () => {
-    hamburger.classList.remove('open');
-    mobileMenu.classList.remove('open');
-    document.body.style.overflow = '';
+if (hamburger && mobileMenu) {
+  hamburger.addEventListener('click', () => {
+    const isOpen = mobileMenu.classList.contains('open');
+    hamburger.classList.toggle('open');
+    mobileMenu.classList.toggle('open');
+    document.body.style.overflow = isOpen ? '' : 'hidden';
   });
-});
+
+  mobileMenu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      hamburger.classList.remove('open');
+      mobileMenu.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+  });
+}
 
 // Floating navbar on scroll
 const navEl = document.querySelector('nav');
-window.addEventListener('scroll', () => {
-  navEl.classList.toggle('floating', window.scrollY > 60);
-}, { passive: true });
+if (navEl) {
+  window.addEventListener('scroll', () => {
+    navEl.classList.toggle('floating', window.scrollY > 60);
+  }, { passive: true });
+}
 
 // Highlight active nav link on scroll
 const sections = document.querySelectorAll('section[id]');
 const navLinks = document.querySelectorAll('.nav-links a');
+let hasScrolled = false;
+window.addEventListener('scroll', () => { hasScrolled = true; }, { once: true, passive: true });
 const navObs = new IntersectionObserver(entries => {
+  if (!hasScrolled) return;
   entries.forEach(e => {
     if (e.isIntersecting) {
       navLinks.forEach(a => {
         a.style.color = a.getAttribute('href') === `#${e.target.id}` ? 'var(--text)' : '';
+      });
+    } else {
+      navLinks.forEach(a => {
+        if (a.getAttribute('href') === `#${e.target.id}`) a.style.color = '';
       });
     }
   });
