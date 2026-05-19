@@ -10,8 +10,11 @@
   let W, H;
 
   function resize(){
-    W = canvas.width = canvas.offsetWidth;
-    H = canvas.height = canvas.offsetHeight;
+    const newW = canvas.offsetWidth;
+    const newH = canvas.offsetHeight;
+    if(newW === W && newH === H) return;
+    W = canvas.width = newW;
+    H = canvas.height = newH;
   }
 
   function rand(min, max){ return Math.random()*(max-min)+min; }
@@ -148,6 +151,53 @@ if (track) {
       clearInterval(autoplay);
       autoplay = setInterval(() => goTo(cur === total - 1 ? 0 : cur + 1), 6000);
     });
+  });
+
+  // Drag & swipe
+  const wrap = track.parentElement;
+  let startX = 0, dragOffset = 0, isDragging = false;
+  const THRESHOLD = 50;
+
+  wrap.addEventListener('mousedown', e => {
+    isDragging = true;
+    startX = e.clientX;
+    dragOffset = 0;
+    wrap.classList.add('dragging');
+    track.style.transition = 'none';
+  });
+
+  window.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    dragOffset = e.clientX - startX;
+    track.style.transform = `translateX(calc(-${cur * 100}% + ${dragOffset}px))`;
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (!isDragging) return;
+    isDragging = false;
+    wrap.classList.remove('dragging');
+    track.style.transition = '';
+    if (dragOffset < -THRESHOLD && cur < total - 1) goTo(cur + 1);
+    else if (dragOffset > THRESHOLD && cur > 0) goTo(cur - 1);
+    else goTo(cur);
+  });
+
+  wrap.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    dragOffset = 0;
+    track.style.transition = 'none';
+  }, { passive: true });
+
+  wrap.addEventListener('touchmove', e => {
+    dragOffset = e.touches[0].clientX - startX;
+    track.style.transform = `translateX(calc(-${cur * 100}% + ${dragOffset}px))`;
+  }, { passive: true });
+
+  wrap.addEventListener('touchend', () => {
+    track.style.transition = '';
+    if (dragOffset < -THRESHOLD && cur < total - 1) goTo(cur + 1);
+    else if (dragOffset > THRESHOLD && cur > 0) goTo(cur - 1);
+    else goTo(cur);
   });
 }
 
