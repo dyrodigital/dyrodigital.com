@@ -273,14 +273,12 @@ sections.forEach(s => navObs.observe(s));
   const SLOTS = ['09:00','10:00','11:00','13:00','14:00','15:00','16:00'];
   const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const BOOKED_KEY = 'dyro_booked';
 
   function getTodayAms(){
     const parts = new Intl.DateTimeFormat('en-CA', {timeZone:'Europe/Amsterdam', year:'numeric', month:'2-digit', day:'2-digit'}).formatToParts(new Date());
     return new Date(+parts.find(p=>p.type==='year').value, +parts.find(p=>p.type==='month').value-1, +parts.find(p=>p.type==='day').value);
   }
 
-  // Returns the UTC Date object for when Amsterdam shows date+slot (e.g. "09:00 on 2026-05-23 Amsterdam time")
   function slotUTC(date, slot){
     const [sh,sm]=slot.split(':').map(Number);
     const y=date.getFullYear(), mo=String(date.getMonth()+1).padStart(2,'0'), d=String(date.getDate()).padStart(2,'0');
@@ -291,12 +289,27 @@ sections.forEach(s => navObs.observe(s));
   }
 
   function tooSoon(date, slot){ return slotUTC(date,slot).getTime() - Date.now() < 12*60*60*1000; }
-
-  function getBooked(){ try{ return JSON.parse(localStorage.getItem(BOOKED_KEY)||'[]'); }catch{ return []; } }
-  function addBooked(dk, slot){ const b=getBooked(); const key=dk+'_'+slot; if(!b.includes(key)){b.push(key);localStorage.setItem(BOOKED_KEY,JSON.stringify(b));} }
-  function isBooked(dk, slot){ return getBooked().includes(dk+'_'+slot); }
   function dateKey(date){ return date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate(); }
-  function hasOpen(date){ const dk=dateKey(date); return SLOTS.some(s=>!tooSoon(date,s)&&!isBooked(dk,s)); }
+  function hasOpen(date){ return SLOTS.some(s=>!tooSoon(date,s)); }
+
+  async function fetchBookedSlots(date){
+    const nextDay=new Date(date); nextDay.setDate(nextDay.getDate()+1);
+    const start=firebase.firestore.Timestamp.fromDate(slotUTC(date,'00:00'));
+    const end=firebase.firestore.Timestamp.fromDate(slotUTC(nextDay,'00:00'));
+    const snap=await firebase.firestore().collection('bookings')
+      .where('booked_for','>=',start)
+      .where('booked_for','<',end)
+      .get();
+    const booked=new Set();
+    snap.forEach(doc=>{
+      const ts=doc.data().booked_for.toDate();
+      const p=new Intl.DateTimeFormat('en-US',{timeZone:'Europe/Amsterdam',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(ts);
+      const h=p.find(x=>x.type==='hour').value;
+      const m=p.find(x=>x.type==='minute').value;
+      booked.add(`${h}:${m}`);
+    });
+    return booked;
+  }
 
   let today = getTodayAms();
   let viewYear = today.getFullYear();
@@ -340,7 +353,7 @@ sections.forEach(s => navObs.observe(s));
     }
   }
 
-  function selectDate(date){
+  async function selectDate(date){
     selectedDate=date; pendingSlot=null;
     renderCalendar();
     bookingPlaceholder.classList.add('hidden');
@@ -348,28 +361,23 @@ sections.forEach(s => navObs.observe(s));
     bookingConfirm.classList.add('hidden');
     bookingSlotsWrap.classList.remove('hidden');
     slotsDateLabel.textContent=DAY_NAMES[date.getDay()]+' '+date.getDate()+' '+MONTHS[date.getMonth()];
-    const dk=dateKey(date);
+    slotsList.innerHTML='<p class="text" style="font-size:0.875rem;grid-column:1/-1">Loading...</p>';
+    let bookedSlots=new Set();
+    try{ bookedSlots=await fetchBookedSlots(date); }catch(err){ console.error(err); }
     slotsList.innerHTML='';
     SLOTS.forEach(slot=>{
+      if(bookedSlots.has(slot)||tooSoon(date,slot)) return;
       const btn=document.createElement('button');
       btn.className='slot-btn';
-      if(isBooked(dk,slot)){
-        return;
-      } else if(tooSoon(date,slot)){
-        btn.classList.add('slot-booked');
-        btn.textContent=slot+' — unavailable';
-        btn.disabled=true;
-      } else {
-        btn.textContent=slot;
-        btn.addEventListener('click',()=>{
-          pendingSlot=slot;
-          bookingSlotsWrap.classList.add('hidden');
-          bookingFormWrap.classList.remove('hidden');
-          const label=DAY_NAMES[date.getDay()]+' '+date.getDate()+' '+MONTHS[date.getMonth()]+' om '+slot;
-          formDateTimeLabel.textContent=label;
-          hiddenDateTime.value=label;
-        });
-      }
+      btn.textContent=slot;
+      btn.addEventListener('click',()=>{
+        pendingSlot=slot;
+        bookingSlotsWrap.classList.add('hidden');
+        bookingFormWrap.classList.remove('hidden');
+        const label=DAY_NAMES[date.getDay()]+' '+date.getDate()+' '+MONTHS[date.getMonth()]+' om '+slot;
+        formDateTimeLabel.textContent=label;
+        hiddenDateTime.value=label;
+      });
       slotsList.appendChild(btn);
     });
   }
