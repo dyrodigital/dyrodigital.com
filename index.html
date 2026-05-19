@@ -316,7 +316,7 @@
             </div>
             <div class="hidden" id="bookingFormWrap">
               <p class="booking-label" id="formDateTimeLabel"></p>
-              <form id="bookingForm" action="https://formspree.io/f/VERVANG_DIT" method="POST">
+              <form id="bookingForm">
                 <input type="hidden" name="Datum en tijd" id="hiddenDateTime">
                 <div class="form-field">
                   <label class="form-label">Name</label>
@@ -339,7 +339,7 @@
             <div class="booking-confirm hidden" id="bookingConfirm">
               <div class="booking-confirm-icon">&#10003;</div>
               <h4>Request received!</h4>
-              <p class="text">You'll receive a confirmation at the provided email address. Talk soon!</p>
+              <p class="text">You will receive a confirmation at the provided email address. We look forward to speaking with you.</p>
             </div>
           </div>
         </div>
@@ -366,6 +366,18 @@
   <span class="footer-copy">© 2026 DyroDigital. All rights reserved.</span>
 </footer>
 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+  firebase.initializeApp({
+    apiKey: "AIzaSyBi26v36Rvt1B7bIaeAWffNUjiM1F8wKaA",
+    authDomain: "dyrodigital-dashboard.firebaseapp.com",
+    projectId: "dyrodigital-dashboard",
+    storageBucket: "dyrodigital-dashboard.firebasestorage.app",
+    messagingSenderId: "170098498968",
+    appId: "1:170098498968:web:a5e5cc7539a0544fe79fed"
+  });
+</script>
 <script src="assets/js/main.js"></script>
 </body>
 </html>

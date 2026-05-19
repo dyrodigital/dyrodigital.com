@@ -354,9 +354,7 @@ sections.forEach(s => navObs.observe(s));
       const btn=document.createElement('button');
       btn.className='slot-btn';
       if(isBooked(dk,slot)){
-        btn.classList.add('slot-booked');
-        btn.textContent=slot+' — booked';
-        btn.disabled=true;
+        return;
       } else if(tooSoon(date,slot)){
         btn.classList.add('slot-booked');
         btn.textContent=slot+' — unavailable';
@@ -392,14 +390,28 @@ sections.forEach(s => navObs.observe(s));
 
   bookingForm.addEventListener('submit', async e=>{
     e.preventDefault();
+    const data=new FormData(bookingForm);
+    const submitBtn=bookingForm.querySelector('[type="submit"]');
+    submitBtn.disabled=true;
     try{
-      const resp=await fetch(bookingForm.action,{method:'POST',body:new FormData(bookingForm),headers:{'Accept':'application/json'}});
-      if(resp.ok){
-        if(selectedDate&&pendingSlot) addBooked(dateKey(selectedDate),pendingSlot);
-        bookingFormWrap.classList.add('hidden');
-        bookingConfirm.classList.remove('hidden');
-      } else { alert('Er is iets misgegaan. Probeer het opnieuw.'); }
-    } catch{ alert('Er is iets misgegaan. Probeer het opnieuw.'); }
+      const db=firebase.firestore();
+      const dd=String(selectedDate.getDate()).padStart(2,'0');
+      const mm=String(selectedDate.getMonth()+1).padStart(2,'0');
+      const yyyy=selectedDate.getFullYear();
+      await db.collection('bookings').add({
+        name: data.get('Name'),
+        email: data.get('Email'),
+        message: data.get('Message')||'',
+        booked_on: firebase.firestore.FieldValue.serverTimestamp(),
+        booked_for: `${dd}-${mm}-${yyyy} ${pendingSlot}`
+      });
+      bookingFormWrap.classList.add('hidden');
+      bookingConfirm.classList.remove('hidden');
+    } catch(err){
+      console.error(err);
+      alert('Er is iets misgegaan. Probeer het opnieuw.');
+      submitBtn.disabled=false;
+    }
   });
 
   renderCalendar();
