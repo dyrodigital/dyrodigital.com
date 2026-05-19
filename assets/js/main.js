@@ -395,15 +395,12 @@ sections.forEach(s => navObs.observe(s));
     submitBtn.disabled=true;
     try{
       const db=firebase.firestore();
-      const dd=String(selectedDate.getDate()).padStart(2,'0');
-      const mm=String(selectedDate.getMonth()+1).padStart(2,'0');
-      const yyyy=selectedDate.getFullYear();
       await db.collection('bookings').add({
         name: data.get('Name'),
         email: data.get('Email'),
         message: data.get('Message')||'',
         booked_on: firebase.firestore.FieldValue.serverTimestamp(),
-        booked_for: `${dd}-${mm}-${yyyy} ${pendingSlot}`
+        booked_for: firebase.firestore.Timestamp.fromDate(slotUTC(selectedDate, pendingSlot))
       });
       bookingFormWrap.classList.add('hidden');
       bookingConfirm.classList.remove('hidden');
