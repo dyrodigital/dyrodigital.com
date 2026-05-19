@@ -370,7 +370,7 @@ sections.forEach(s => navObs.observe(s));
         pendingSlot=slot;
         bookingSlotsWrap.classList.add('hidden');
         bookingFormWrap.classList.remove('hidden');
-        const label=DAY_NAMES[date.getDay()]+' '+date.getDate()+' '+MONTHS[date.getMonth()]+' om '+slot;
+        const label=DAY_NAMES[date.getDay()]+' '+date.getDate()+' '+MONTHS[date.getMonth()]+' at '+slot;
         formDateTimeLabel.textContent=label;
         hiddenDateTime.value=label;
       });
@@ -404,6 +404,7 @@ sections.forEach(s => navObs.observe(s));
         email: data.get('Email'),
         message: data.get('Message')||'',
         booked_on: firebase.firestore.FieldValue.serverTimestamp(),
+        booked_for: firebase.firestore.Timestamp.fromDate(slotUTC(selectedDate, pendingSlot)),
         date: dateStr(selectedDate),
         time: pendingSlot
       });
