@@ -24,9 +24,8 @@
     <li><a href="#services">Services</a></li>
     <li><a href="#portfolio">Portfolio</a></li>
     <li><a href="#testimonials">Testimonials</a></li>
-    <li><a href="#contact">Contact</a></li>
   </ul>
-  <a href="https://cal.eu/dyrodigital/free-discovery-call" class="nav-cta" target="_blank" rel="noopener">Free discovery call</a>
+  <a href="#contact" class="nav-cta">Free discovery call</a>
   <button class="nav-hamburger" id="navHamburger" aria-label="Menu">
     <span></span><span></span><span></span>
   </button>
@@ -37,9 +36,8 @@
     <li><a href="#services">Services</a></li>
     <li><a href="#portfolio">Portfolio</a></li>
     <li><a href="#testimonials">Testimonials</a></li>
-    <li><a href="#contact">Contact</a></li>
   </ul>
-  <a href="https://cal.eu/dyrodigital/free-discovery-call" class="btn-primary" target="_blank" rel="noopener">Free discovery call</a>
+  <a href="#contact" class="btn-primary">Free discovery call</a>
 </div>
 
 <!-- HERO -->
@@ -50,7 +48,7 @@
   <p class="hero-sub">DyroDigital designs and builds apps and websites. From design to development to optimization. Helping businesses grow, scale, and stand out online.</p>
   <div class="hero-btns">
     <a href="https://www.dyrodigital.com/portfolio" class="btn-primary" target="_blank" rel="noopener">View portfolio</a>
-    <a href="https://cal.eu/dyrodigital/free-discovery-call" class="btn-ghost" target="_blank" rel="noopener">Free discovery call</a>
+    <a href="#contact" class="btn-ghost">Free discovery call</a>
   </div>
   <div class="hero-scroll"></div>
 </section>
@@ -267,11 +265,85 @@
 <section id="contact">
   <div class="fade-in">
     <div class="contact-inner">
-      <div class="section-label" style="text-align:center">Contact</div>
+      <div class="section-label" style="text-align:center">Free Discovery Call</div>
       <div class="section-title" style="text-align:center">Ready to take your business<br>to the next level?</div>
       <p class="section-sub" style="text-align:center;margin:16px auto 36px">Let's talk about your project. Book a free discovery call and we'll figure out exactly how to move forward.</p>
-      <a href="https://cal.eu/dyrodigital/free-discovery-call" class="btn-primary" target="_blank" rel="noopener" style="display:inline-block;margin-bottom:32px">Book a free discovery call</a>
     </div>
+    <div class="booking-widget">
+        <div class="booking-grid">
+          <div class="booking-info">
+            <div>
+              <span class="booking-info-org">DyroDigital</span>
+              <h4 class="booking-info-title">Free Discovery Call</h4>
+            </div>
+            <p class="text" style="line-height:1.6">In this free 30-minute discovery call, we get to know each other, discuss your business and challenges, and see if we're the right fit to work together.</p>
+            <div class="booking-info-meta">
+              <span class="booking-tag svc-tag">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                30 min
+              </span>
+              <span class="booking-tag svc-tag">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                Google Meet
+              </span>
+              <span class="booking-tag svc-tag">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                Europe/Amsterdam
+              </span>
+            </div>
+          </div>
+          <div class="booking-cal">
+            <p class="booking-label">Select a date</p>
+            <div class="booking-calendar">
+              <div class="cal-nav">
+                <button class="cal-nav-btn" id="calPrev" aria-label="Vorige maand">&#8592;</button>
+                <span class="cal-month" id="calMonthLabel"></span>
+                <button class="cal-nav-btn" id="calNext" aria-label="Volgende maand">&#8594;</button>
+              </div>
+              <div class="cal-weekdays">
+                <span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span>
+              </div>
+              <div class="cal-days" id="calDays"></div>
+            </div>
+          </div>
+          <div class="booking-right" id="bookingRight">
+            <div class="booking-placeholder" id="bookingPlaceholder">
+              <p class="text">&#8592; Kies eerst een datum</p>
+            </div>
+            <div class="hidden" id="bookingSlots">
+              <p class="booking-label" id="slotsDateLabel"></p>
+              <div class="booking-slots" id="slotsList"></div>
+            </div>
+            <div class="hidden" id="bookingFormWrap">
+              <p class="booking-label" id="formDateTimeLabel"></p>
+              <form id="bookingForm" action="https://formspree.io/f/VERVANG_DIT" method="POST">
+                <input type="hidden" name="Datum en tijd" id="hiddenDateTime">
+                <div class="form-field">
+                  <label class="form-label">Name</label>
+                  <input class="form-input" type="text" name="Name" placeholder="Your name" required>
+                </div>
+                <div class="form-field">
+                  <label class="form-label">Email address</label>
+                  <input class="form-input" type="email" name="Email" placeholder="your@email.com" required>
+                </div>
+                <div class="form-field">
+                  <label class="form-label">Message <span class="text" style="font-size:0.875rem">(optional)</span></label>
+                  <textarea class="form-input form-textarea" name="Message" placeholder="Tell us briefly about your project..."></textarea>
+                </div>
+                <div class="booking-form-btns">
+                  <button type="button" class="btn-ghost" id="backToSlots">&#8592; Back</button>
+                  <button type="submit" class="btn-primary">Confirm &#8594;</button>
+                </div>
+              </form>
+            </div>
+            <div class="booking-confirm hidden" id="bookingConfirm">
+              <div class="booking-confirm-icon">&#10003;</div>
+              <h4>Request received!</h4>
+              <p class="text">You'll receive a confirmation at the provided email address. Talk soon!</p>
+            </div>
+          </div>
+        </div>
+      </div>
   </div>
 </section>
 

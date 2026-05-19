@@ -250,3 +250,158 @@ const navObs = new IntersectionObserver(entries => {
   });
 }, { threshold: 0.4 });
 sections.forEach(s => navObs.observe(s));
+
+// Booking widget
+(function(){
+  const calDays = document.getElementById('calDays');
+  if(!calDays) return;
+
+  const calMonthLabel = document.getElementById('calMonthLabel');
+  const calPrev = document.getElementById('calPrev');
+  const calNext = document.getElementById('calNext');
+  const bookingPlaceholder = document.getElementById('bookingPlaceholder');
+  const bookingSlotsWrap = document.getElementById('bookingSlots');
+  const slotsList = document.getElementById('slotsList');
+  const slotsDateLabel = document.getElementById('slotsDateLabel');
+  const bookingFormWrap = document.getElementById('bookingFormWrap');
+  const formDateTimeLabel = document.getElementById('formDateTimeLabel');
+  const hiddenDateTime = document.getElementById('hiddenDateTime');
+  const backToSlots = document.getElementById('backToSlots');
+  const bookingForm = document.getElementById('bookingForm');
+  const bookingConfirm = document.getElementById('bookingConfirm');
+
+  const SLOTS = ['09:00','10:00','11:00','13:00','14:00','15:00','16:00'];
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const BOOKED_KEY = 'dyro_booked';
+
+  function getTodayAms(){
+    const parts = new Intl.DateTimeFormat('en-CA', {timeZone:'Europe/Amsterdam', year:'numeric', month:'2-digit', day:'2-digit'}).formatToParts(new Date());
+    return new Date(+parts.find(p=>p.type==='year').value, +parts.find(p=>p.type==='month').value-1, +parts.find(p=>p.type==='day').value);
+  }
+
+  // Returns the UTC Date object for when Amsterdam shows date+slot (e.g. "09:00 on 2026-05-23 Amsterdam time")
+  function slotUTC(date, slot){
+    const [sh,sm]=slot.split(':').map(Number);
+    const y=date.getFullYear(), mo=String(date.getMonth()+1).padStart(2,'0'), d=String(date.getDate()).padStart(2,'0');
+    const probe=new Date(`${y}-${mo}-${d}T${String(sh).padStart(2,'0')}:${String(sm).padStart(2,'0')}:00Z`);
+    const p=new Intl.DateTimeFormat('en-US',{timeZone:'Europe/Amsterdam',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(probe);
+    const offsetMs=((sh*60+sm)-(+p.find(x=>x.type==='hour').value*60+ +p.find(x=>x.type==='minute').value))*60000;
+    return new Date(probe.getTime()+offsetMs);
+  }
+
+  function tooSoon(date, slot){ return slotUTC(date,slot).getTime() - Date.now() < 12*60*60*1000; }
+
+  function getBooked(){ try{ return JSON.parse(localStorage.getItem(BOOKED_KEY)||'[]'); }catch{ return []; } }
+  function addBooked(dk, slot){ const b=getBooked(); const key=dk+'_'+slot; if(!b.includes(key)){b.push(key);localStorage.setItem(BOOKED_KEY,JSON.stringify(b));} }
+  function isBooked(dk, slot){ return getBooked().includes(dk+'_'+slot); }
+  function dateKey(date){ return date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate(); }
+  function hasOpen(date){ const dk=dateKey(date); return SLOTS.some(s=>!tooSoon(date,s)&&!isBooked(dk,s)); }
+
+  let today = getTodayAms();
+  let viewYear = today.getFullYear();
+  let viewMonth = today.getMonth();
+  let selectedDate = null;
+  let pendingSlot = null;
+
+  function getMaxDate(){
+    const m=new Date(today);
+    m.setDate(m.getDate()+14);
+    return m;
+  }
+
+  function renderCalendar(){
+    today = getTodayAms();
+    const maxDate = getMaxDate();
+    calMonthLabel.textContent = MONTHS[viewMonth]+' '+viewYear;
+    calDays.innerHTML = '';
+    calPrev.disabled = viewYear===today.getFullYear() && viewMonth===today.getMonth();
+    calNext.disabled = new Date(viewYear, viewMonth+1, 1) > maxDate;
+    const startDow = (new Date(viewYear, viewMonth, 1).getDay()+6)%7;
+    const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+    for(let i=0; i<startDow; i++){
+      const el=document.createElement('button'); el.className='cal-day cal-empty'; calDays.appendChild(el);
+    }
+    for(let d=1; d<=daysInMonth; d++){
+      const btn=document.createElement('button');
+      btn.className='cal-day';
+      btn.textContent=d;
+      const date=new Date(viewYear, viewMonth, d);
+      const dow=date.getDay();
+      const isPast=date<today;
+      const isWeekend=dow===0||dow===6;
+      const isTooFar=date>maxDate;
+      const noSlots=!isPast&&!isWeekend&&!isTooFar&&!hasOpen(date);
+      if(isPast||isWeekend||isTooFar||noSlots) btn.classList.add('cal-disabled');
+      if(date.getTime()===today.getTime()) btn.classList.add('cal-today');
+      if(selectedDate&&date.getTime()===selectedDate.getTime()) btn.classList.add('cal-selected');
+      if(!isPast&&!isWeekend&&!isTooFar&&!noSlots) btn.addEventListener('click',()=>selectDate(date));
+      calDays.appendChild(btn);
+    }
+  }
+
+  function selectDate(date){
+    selectedDate=date; pendingSlot=null;
+    renderCalendar();
+    bookingPlaceholder.classList.add('hidden');
+    bookingFormWrap.classList.add('hidden');
+    bookingConfirm.classList.add('hidden');
+    bookingSlotsWrap.classList.remove('hidden');
+    slotsDateLabel.textContent=DAY_NAMES[date.getDay()]+' '+date.getDate()+' '+MONTHS[date.getMonth()];
+    const dk=dateKey(date);
+    slotsList.innerHTML='';
+    SLOTS.forEach(slot=>{
+      const btn=document.createElement('button');
+      btn.className='slot-btn';
+      if(isBooked(dk,slot)){
+        btn.classList.add('slot-booked');
+        btn.textContent=slot+' — booked';
+        btn.disabled=true;
+      } else if(tooSoon(date,slot)){
+        btn.classList.add('slot-booked');
+        btn.textContent=slot+' — unavailable';
+        btn.disabled=true;
+      } else {
+        btn.textContent=slot;
+        btn.addEventListener('click',()=>{
+          pendingSlot=slot;
+          bookingSlotsWrap.classList.add('hidden');
+          bookingFormWrap.classList.remove('hidden');
+          const label=DAY_NAMES[date.getDay()]+' '+date.getDate()+' '+MONTHS[date.getMonth()]+' om '+slot;
+          formDateTimeLabel.textContent=label;
+          hiddenDateTime.value=label;
+        });
+      }
+      slotsList.appendChild(btn);
+    });
+  }
+
+  function autoSelectFirst(){
+    const maxDate=getMaxDate();
+    const d=new Date(today);
+    while(d<=maxDate){
+      const dow=d.getDay();
+      if(dow!==0&&dow!==6&&hasOpen(d)){ selectDate(new Date(d)); return; }
+      d.setDate(d.getDate()+1);
+    }
+  }
+
+  calPrev.addEventListener('click',()=>{ if(viewMonth===0){viewMonth=11;viewYear--;}else viewMonth--; renderCalendar(); });
+  calNext.addEventListener('click',()=>{ if(viewMonth===11){viewMonth=0;viewYear++;}else viewMonth++; renderCalendar(); });
+  backToSlots.addEventListener('click',()=>{ bookingFormWrap.classList.add('hidden'); bookingSlotsWrap.classList.remove('hidden'); });
+
+  bookingForm.addEventListener('submit', async e=>{
+    e.preventDefault();
+    try{
+      const resp=await fetch(bookingForm.action,{method:'POST',body:new FormData(bookingForm),headers:{'Accept':'application/json'}});
+      if(resp.ok){
+        if(selectedDate&&pendingSlot) addBooked(dateKey(selectedDate),pendingSlot);
+        bookingFormWrap.classList.add('hidden');
+        bookingConfirm.classList.remove('hidden');
+      } else { alert('Er is iets misgegaan. Probeer het opnieuw.'); }
+    } catch{ alert('Er is iets misgegaan. Probeer het opnieuw.'); }
+  });
+
+  renderCalendar();
+  autoSelectFirst();
+})();
