@@ -292,22 +292,18 @@ sections.forEach(s => navObs.observe(s));
   function dateKey(date){ return date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate(); }
   function hasOpen(date){ return SLOTS.some(s=>!tooSoon(date,s)); }
 
+  function dateStr(date){
+    const dd=String(date.getDate()).padStart(2,'0');
+    const mm=String(date.getMonth()+1).padStart(2,'0');
+    return `${dd}-${mm}-${date.getFullYear()}`;
+  }
+
   async function fetchBookedSlots(date){
-    const nextDay=new Date(date); nextDay.setDate(nextDay.getDate()+1);
-    const start=firebase.firestore.Timestamp.fromDate(slotUTC(date,'00:00'));
-    const end=firebase.firestore.Timestamp.fromDate(slotUTC(nextDay,'00:00'));
     const snap=await firebase.firestore().collection('bookings')
-      .where('booked_for','>=',start)
-      .where('booked_for','<',end)
+      .where('date','==',dateStr(date))
       .get();
     const booked=new Set();
-    snap.forEach(doc=>{
-      const ts=doc.data().booked_for.toDate();
-      const p=new Intl.DateTimeFormat('en-US',{timeZone:'Europe/Amsterdam',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(ts);
-      const h=p.find(x=>x.type==='hour').value;
-      const m=p.find(x=>x.type==='minute').value;
-      booked.add(`${h}:${m}`);
-    });
+    snap.forEach(doc=>booked.add(doc.data().time));
     return booked;
   }
 
@@ -408,7 +404,8 @@ sections.forEach(s => navObs.observe(s));
         email: data.get('Email'),
         message: data.get('Message')||'',
         booked_on: firebase.firestore.FieldValue.serverTimestamp(),
-        booked_for: firebase.firestore.Timestamp.fromDate(slotUTC(selectedDate, pendingSlot))
+        date: dateStr(selectedDate),
+        time: pendingSlot
       });
       bookingFormWrap.classList.add('hidden');
       bookingConfirm.classList.remove('hidden');
