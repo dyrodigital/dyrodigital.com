@@ -9,6 +9,7 @@ if (loader) {
   }, { once: true });
 }
 
+
 // Hero particle network
 (function(){
   const canvas = document.getElementById('heroCanvas');
