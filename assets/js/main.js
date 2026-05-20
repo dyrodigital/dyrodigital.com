@@ -218,6 +218,28 @@ if (track) {
   });
 }
 
+// Nav link letter hover effect
+document.querySelectorAll('.nav-links a').forEach(link => {
+  const text = link.textContent.trim();
+  link.textContent = '';
+  [...text].forEach((char, i) => {
+    const isEven = i % 2 === 0;
+    const delay = isEven
+      ? Math.floor(i / 2) * 18
+      : 45 + Math.floor(i / 2) * 18;
+    const wrap = document.createElement('span');
+    wrap.className = 'nl-wrap';
+    ['nl-top', 'nl-bot'].forEach(cls => {
+      const s = document.createElement('span');
+      s.className = cls;
+      s.textContent = char === ' ' ? ' ' : char;
+      s.style.transitionDelay = `${delay}ms`;
+      wrap.appendChild(s);
+    });
+    link.appendChild(wrap);
+  });
+});
+
 // Hamburger menu
 const hamburger = document.getElementById('navHamburger');
 const mobileMenu = document.getElementById('navMobileMenu');
