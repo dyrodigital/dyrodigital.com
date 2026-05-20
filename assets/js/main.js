@@ -1,3 +1,14 @@
+// Page loader
+const loader = document.getElementById('page-loader');
+if (loader) {
+  const loaderImg = loader.querySelector('img');
+  loaderImg.addEventListener('animationend', () => {
+    loader.classList.add('fade-out');
+
+    loader.addEventListener('animationend', () => loader.remove(), { once: true });
+  }, { once: true });
+}
+
 // Hero particle network
 (function(){
   const canvas = document.getElementById('heroCanvas');
@@ -130,9 +141,14 @@ if (track) {
   const total = track.children.length;
   let cur = 0;
 
+  function getOffset(n) {
+    const gap = parseFloat(getComputedStyle(track).gap) || 0;
+    return n * (wrap.offsetWidth + gap);
+  }
+
   function goTo(n) {
     cur = n;
-    track.style.transform = `translateX(-${cur * 100}%)`;
+    track.style.transform = `translateX(-${getOffset(n)}px)`;
     dots.forEach((d, i) => d.classList.toggle('active', i === cur));
     prev.disabled = cur === 0;
     next.disabled = cur === total - 1;
@@ -169,7 +185,7 @@ if (track) {
   window.addEventListener('mousemove', e => {
     if (!isDragging) return;
     dragOffset = e.clientX - startX;
-    track.style.transform = `translateX(calc(-${cur * 100}% + ${dragOffset}px))`;
+    track.style.transform = `translateX(${-getOffset(cur) + dragOffset}px)`;
   });
 
   window.addEventListener('mouseup', () => {
@@ -190,7 +206,7 @@ if (track) {
 
   wrap.addEventListener('touchmove', e => {
     dragOffset = e.touches[0].clientX - startX;
-    track.style.transform = `translateX(calc(-${cur * 100}% + ${dragOffset}px))`;
+    track.style.transform = `translateX(${-getOffset(cur) + dragOffset}px)`;
   }, { passive: true });
 
   wrap.addEventListener('touchend', () => {
