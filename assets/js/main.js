@@ -185,6 +185,7 @@ if (track) {
 
   window.addEventListener('mousemove', e => {
     if (!isDragging) return;
+    if (e.buttons === 0) { isDragging = false; wrap.classList.remove('dragging'); track.style.transition = ''; goTo(cur); return; }
     dragOffset = e.clientX - startX;
     track.style.transform = `translateX(${-getOffset(cur) + dragOffset}px)`;
   });
@@ -217,6 +218,73 @@ if (track) {
     else goTo(cur);
   });
 }
+
+// Process stepper
+(function(){
+  const nav = document.getElementById('stepperNav');
+  if (!nav) return;
+
+  const steps = [
+    { title: 'Discovery',           label: 'Step 1', text: 'We start with a discovery call to explore your goals and vision, determine whether we\'re the right match, and gain a clear understanding of what needs to be built.' },
+    { title: 'Design',              label: 'Step 2', text: 'We bring your brand and vision to life with a clean, intuitive design, minimal, visually appealing, and effortless for users to navigate.' },
+    { title: 'Revision',            label: 'Step 3', text: 'We review the design together and refine until everything aligns perfectly with your goals. There is no limit to the number of revision rounds.' },
+    { title: 'Development',         label: 'Step 4', text: 'With the design approved, we build your product with a focus on speed, security, and user experience, running flawlessly across all devices and platforms.' },
+    { title: 'Testing',             label: 'Step 5', text: 'We test for performance, functionality, and usability, applying final adjustments to make sure everything works perfectly before going live.' },
+    { title: 'Launch & Optimization', label: 'Step 6', text: 'We launch your product, monitor its performance across all channels, and continuously optimize to ensure the best possible results and a smooth experience from day one.' }
+  ];
+
+  let current = 0;
+  const dots       = nav.querySelectorAll('.stepper-dot');
+  const labels     = nav.querySelectorAll('.stepper-label');
+  const progress   = document.getElementById('stepperProgress');
+  const content    = document.getElementById('stepperContent');
+  const labelEl    = document.getElementById('stepperLabel');
+  const titleEl    = document.getElementById('stepperTitle');
+  const textEl     = document.getElementById('stepperText');
+  const currentEl  = document.getElementById('stepperCurrent');
+  const btnPrev    = document.getElementById('stepperPrev');
+  const btnNext    = document.getElementById('stepperNext');
+
+  function updateProgress(idx) {
+    const first = dots[0].offsetLeft + dots[0].offsetWidth / 2;
+    const curr  = dots[idx].offsetLeft + dots[idx].offsetWidth / 2;
+    progress.style.width = (curr - first) + 'px';
+  }
+
+  function goTo(idx, dir) {
+    content.style.opacity = '0';
+    content.style.transform = dir > 0 ? 'translateX(20px)' : 'translateX(-20px)';
+    setTimeout(() => {
+      current = idx;
+      const s = steps[current];
+      labelEl.textContent   = s.label;
+      titleEl.textContent   = s.title;
+      textEl.textContent    = s.text;
+      currentEl.textContent = current + 1;
+      dots.forEach((d, i) => {
+        d.classList.remove('active', 'done');
+        if (i < current) d.classList.add('done');
+        if (i === current) d.classList.add('active');
+      });
+      labels.forEach((l, i) => l.classList.toggle('active', i === current));
+      updateProgress(current);
+      btnPrev.disabled = current === 0;
+      btnNext.disabled = current === steps.length - 1;
+      content.style.transform = dir > 0 ? 'translateX(-20px)' : 'translateX(20px)';
+      requestAnimationFrame(() => {
+        content.style.transition = 'opacity 0.35s ease-out, transform 0.35s ease-out';
+        content.style.opacity = '1';
+        content.style.transform = 'translateX(0)';
+      });
+    }, 200);
+  }
+
+  btnNext.addEventListener('click', () => { if (current < steps.length - 1) goTo(current + 1, 1); });
+  btnPrev.addEventListener('click', () => { if (current > 0) goTo(current - 1, -1); });
+  dots.forEach((d, i) => d.addEventListener('click', () => { if (i !== current) goTo(i, i > current ? 1 : -1); }));
+
+  updateProgress(0);
+})();
 
 // Nav link letter hover effect
 document.querySelectorAll('.nav-links a').forEach(link => {

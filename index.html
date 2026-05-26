@@ -126,37 +126,50 @@
       <div class="section-label">Process</div>
       <div class="section-title">From idea to launch</div>
     </div>
-    <div class="process-grid">
-      <div class="process-step">
-        <div class="process-num">01</div>
-        <h3>Discovery</h3>
-        <p>We start with a discovery call to explore your goals and vision, determine whether we're the right match, and gain a clear understanding of what needs to be built.</p>
+    <div class="stepper-nav" id="stepperNav">
+      <div class="stepper-progress" id="stepperProgress"></div>
+      <div class="stepper-item">
+        <div class="stepper-dot active" data-step="0">1</div>
+        <div class="stepper-label active">Discovery</div>
       </div>
-      <div class="process-step">
-        <div class="process-num">02</div>
-        <h3>Design</h3>
-        <p>We bring your brand and vision to life with a clean, intuitive design, minimal, visually appealing, and effortless for users to navigate.</p>
+      <div class="stepper-item">
+        <div class="stepper-dot" data-step="1">2</div>
+        <div class="stepper-label">Design</div>
       </div>
-      <div class="process-step">
-        <div class="process-num">03</div>
-        <h3>Revision</h3>
-        <p>We review the design together and refine until everything aligns perfectly with your goals. There is no limit to the number of revision rounds.</p>
+      <div class="stepper-item">
+        <div class="stepper-dot" data-step="2">3</div>
+        <div class="stepper-label">Revision</div>
       </div>
-      <div class="process-step">
-        <div class="process-num">04</div>
-        <h3>Development</h3>
-        <p>With the design approved, we build your product with a focus on speed, security, and user experience, running flawlessly across all devices and platforms.</p>
+      <div class="stepper-item">
+        <div class="stepper-dot" data-step="3">4</div>
+        <div class="stepper-label">Development</div>
       </div>
-      <div class="process-step">
-        <div class="process-num">05</div>
-        <h3>Testing</h3>
-        <p>We test for performance, functionality, and usability, applying final adjustments to make sure everything works perfectly before going live.</p>
+      <div class="stepper-item">
+        <div class="stepper-dot" data-step="4">5</div>
+        <div class="stepper-label">Testing</div>
       </div>
-      <div class="process-step">
-        <div class="process-num">06</div>
-        <h3>Launch & Optimization</h3>
-        <p>We launch your product, monitor performance, and keep optimizing to ensure the best possible results from day one.</p>
+      <div class="stepper-item">
+        <div class="stepper-dot" data-step="5">6</div>
+        <div class="stepper-label">Launch</div>
       </div>
+    </div>
+    <div class="stepper-card">
+      <div class="stepper-card-content" id="stepperContent">
+        <div class="stepper-card-step" id="stepperLabel">Step 1</div>
+        <div class="stepper-card-title" id="stepperTitle">Discovery</div>
+        <div class="stepper-card-text" id="stepperText">We start with a discovery call to explore your goals and vision, determine whether we're the right match, and gain a clear understanding of what needs to be built.</div>
+      </div>
+    </div>
+    <div class="stepper-controls">
+      <button class="stepper-btn" id="stepperPrev" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+        Previous
+      </button>
+      <div class="stepper-counter"><span id="stepperCurrent">1</span> / 6</div>
+      <button class="stepper-btn" id="stepperNext">
+        Next
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
     </div>
   </div>
 </section>
